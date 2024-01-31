@@ -1,9 +1,12 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
 #include "spaceship.h"
+
+# define M_PI           3.14159265358979323846
 
 spaceship_t* init_spaceship(SDL_Renderer* ctx, const char* texturePath, double s_width, double s_height) {
     spaceship_t* spaceship = (spaceship_t*) malloc(sizeof(spaceship_t));
@@ -53,15 +56,23 @@ void render_spaceship(SDL_Renderer* ctx, spaceship_t* s) {
 }
 
 void rotate_clockwise(spaceship_t* s) {
-    s->direction.angle += 1; // must be reviewed
+    if (s->direction.angle >= 360) s->direction.angle -= 360;
+    s->direction.angle += 0.5;
 
-    s->direction.vector.x = cos(s->direction.angle);
-    s->direction.vector.y = sin(s->direction.angle);
+    s->direction.vector.x = cos(s->direction.angle * M_PI / 180);
+    s->direction.vector.y = sin(s->direction.angle * M_PI / 180);
 }
 
 void rotate_anticlockwise(spaceship_t* s) {
-    s->direction.angle -= 1; // must be reviewed
+    if (s->direction.angle <= 0) s->direction.angle += 360;
+    
+    s->direction.angle -= 0.5;
 
-    s->direction.vector.x = cos(s->direction.angle);
-    s->direction.vector.y = sin(s->direction.angle);
+    s->direction.vector.x = cos(s->direction.angle * M_PI / 180);
+    s->direction.vector.y = sin(s->direction.angle * M_PI / 180);
+}
+
+void move_spaceship(spaceship_t* s) {
+    s->position.x += 1 * s->direction.vector.x;
+    s->position.y += 1 * s->direction.vector.y;
 }

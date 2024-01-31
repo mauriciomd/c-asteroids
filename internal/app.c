@@ -48,33 +48,73 @@ void create_player(app_t* app) {
 }
 
 void run_app(app_t* app) {
-
+    app->is_running = true;
     SDL_Event event;
-    while (true) {
-        int r = SDL_PollEvent(&event);
-        if (r > 0) {
-            if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_Q) {
-                break;
-            }
 
-            if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
-                rotate_anticlockwise(app->player);
-            }
-
-            if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_RIGHT) {
-                rotate_clockwise(app->player);
-            }
+    while (app->is_running) {
+        while (SDL_PollEvent(&event) > 0) {
+            process_events(event, app);
         }
-        
-        SDL_RenderClear(app->renderer);
-        
-        SDL_FillRect(app->surface, NULL, SDL_MapRGB(app->surface->format, 0x00, 0x0, 0x0));
-        render_spaceship(app->renderer, app->player);
-        
-        SDL_RenderPresent(app->renderer);
+
+        process_scene(app);
+        render_objects(app);    
     }
     
     destroy_game_objects(app);
+}
+
+void process_events(SDL_Event event, app_t* app) {
+    if (event.type == SDL_KEYDOWN) {
+        switch (event.key.keysym.scancode)
+        {
+            case SDL_SCANCODE_LEFT:
+                app->keys.is_left_pressed = true;    
+                return;
+            case SDL_SCANCODE_RIGHT:
+                app->keys.is_right_pressed = true;    
+                return;
+            case SDL_SCANCODE_UP:
+                app->keys.is_up_pressed = true;    
+                return;
+        default:
+            return;
+        }
+    }
+
+    if (event.type == SDL_KEYUP) {
+        switch (event.key.keysym.scancode)
+        {
+            case SDL_SCANCODE_Q:
+                app->is_running = false;
+                return;
+            case SDL_SCANCODE_LEFT:
+                app->keys.is_left_pressed = false;    
+                return;
+            case SDL_SCANCODE_RIGHT:
+                app->keys.is_right_pressed = false;    
+                return;
+            case SDL_SCANCODE_UP:
+                app->keys.is_up_pressed = false;    
+                return;
+        default:
+            break;
+        }
+    }
+}
+
+void process_scene(app_t* app) {
+    if (app->keys.is_up_pressed) move_spaceship(app->player);
+    if (app->keys.is_left_pressed) rotate_anticlockwise(app->player);
+    if (app->keys.is_right_pressed) rotate_clockwise(app->player);
+}
+
+void render_objects(app_t* app) {
+    SDL_RenderClear(app->renderer);
+    render_spaceship(app->renderer, app->player);
+    // SDL_SetRenderDrawColor(app->renderer, 255, 0, 0, 1);
+    // SDL_RenderDrawLine(app->renderer, app->player->position.x, app->player->position.y, app->player->position.x + 20 * app->player->direction.vector.x, app->player->position.y + 20 * app->player->direction.vector.y);
+    
+    SDL_RenderPresent(app->renderer);
 }
 
 void destroy_game_objects(app_t* app) {
