@@ -1,43 +1,35 @@
 #include <stdbool.h>
-#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
-typedef struct Window {
-    int width;
-    int height;
-    SDL_Window *w;
-    SDL_Surface *surface;
-    SDL_Renderer *renderer;
+#include "internal/app.h"
 
-} window_t;
-
-void init_SDL(window_t *window) {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        printf("SDL could not be initializes. Error: %s", SDL_GetError());
-        exit(1);
-    }
-
-    window->w = SDL_CreateWindow("Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window->width, window->height, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS);
-    if (window->w == NULL) {
-        printf("SDL Window could not be created. Error: %s", SDL_GetError());
-        exit(1);
-    }
-
-    window->surface = SDL_GetWindowSurface(window->w);
-}
 
 int main(int argc, char* argv[]) {
-    window_t window = { 1280, 720, NULL, NULL, NULL };
+    app_t *app = init_app(1280, 720);
     
-    init_SDL(&window);
+    run_app(app);
+    // init_SDL(&window);
+    // load_sprites(&window);
 
-    SDL_FillRect(window.surface, NULL, SDL_MapRGB( window.surface->format, 0x00, 0x0, 0x0));
+    // SDL_FillRect(window.surface, NULL, SDL_MapRGB( window.surface->format, 0x00, 0x0, 0x0));
 
-    SDL_UpdateWindowSurface(window.w);
+    // SDL_UpdateWindowSurface(window.w);
     
-    SDL_Event e; bool quit = false; while( quit == false ){ while( SDL_PollEvent( &e ) ){ if( e.type == SDL_QUIT ) quit = true; } }
+    //Clear screen
+    // SDL_RenderClear(window.renderer);
 
-    SDL_DestroyWindow(window.w);
-    SDL_Quit();
+    //Render texture to screen
+    // SDL_RenderCopy(window.renderer, window.texture, NULL, NULL);
+
+    //Update screen
+    // SDL_RenderPresent(window.renderer);
+
+    // SDL_Event e; bool quit = false; while( quit == false ){ while( SDL_PollEvent( &e ) ){ if( e.type == SDL_QUIT ) quit = true; } }
+
+    // SDL_Delay(10000);
+
+    // SDL_DestroyWindow(window.w);
+    // SDL_Quit();
 
     return 0;
 }
