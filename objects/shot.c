@@ -40,6 +40,6 @@ void render_shot(SDL_Renderer* ctx, SDL_Texture* texture, shot_t* shot, bool sho
 }
 
 void move_shot(shot_t* s) {
-    s->position.x += SPACESHIP_VELOCITY * s->direction.vector.x;
-    s->position.y += SPACESHIP_VELOCITY * s->direction.vector.y;
+    s->position.x += SHOT_VELOCITY * s->direction.vector.x;
+    s->position.y += SHOT_VELOCITY * s->direction.vector.y;
 }

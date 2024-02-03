@@ -7,7 +7,7 @@
 
 #define SHOT_WIDTH  8
 #define SHOT_HEIGHT 8
-#define SHOT_VELOCITY 1
+#define SHOT_VELOCITY 2
 
 typedef struct Shot
 {   
