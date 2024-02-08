@@ -109,15 +109,15 @@ void move_asteroid(asteroid_t* a, double w, double h) {
     double y = a->position.y + a->velocity * a->direction.vector.y;
 
     if (x - a->width > w) { 
-        x -= w - THRESHOLD;
+        x = -THRESHOLD;
     } else if (x + a->width < 0) {
-        x += w + THRESHOLD; 
+        x = w + THRESHOLD; 
     } 
 
     if (y - a->height > h) { 
-        y = -THRESHOLD - a->height; 
+        y = -THRESHOLD; 
     } else if (y + a->height < 0) { 
-        y += h + THRESHOLD;  
+        y = h + THRESHOLD;  
     }
 
     a->position.x = x;
