@@ -1,18 +1,21 @@
 #include <stdlib.h>
 #include <stdbool.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
+#include <time.h>
 
 #include "app.h"
 
 app_t* init_app(int width, int height) {
     app_t* app = (app_t*) malloc(sizeof(app_t));
-    
+    app->shots = create_list();
+    app->asteroids = create_list();
+
     app->screen_width = width;
     app->screen_height = height;
 
     init_sdl(app);
+    load_texture(app, "./assets/asteroids.png");
     create_player(app);
+    init_asteroids(app);
     
     return app;
 }
@@ -39,12 +42,32 @@ void init_sdl(app_t* app) {
         printf("SDL Renderer could not be created. Error: %s", SDL_GetError());
         exit(1);
     }
+}
 
-    app->surface = SDL_GetWindowSurface(app->window);
+void load_texture(app_t* app, const char* path) {
+    SDL_Surface *loadedSurface = IMG_Load(path);
+    if (loadedSurface == NULL) {
+        printf("Unable to load image %s. SDL_image Error: %s\n", path, IMG_GetError());
+        exit(1);
+    }
+
+    app->texture = SDL_CreateTextureFromSurface(app->renderer, loadedSurface);
+    if (app->texture == NULL) {
+        printf("Unable to create texture! SDL Error: %s\n", SDL_GetError());
+        exit(1);
+    }
+
+    SDL_FreeSurface(loadedSurface);
 }
 
 void create_player(app_t* app) {
-    app->player = init_spaceship(app->renderer, "./assets/asteroids.png", app->screen_width, app->screen_height); 
+    app->player = init_spaceship(app->screen_width, app->screen_height); 
+}
+
+void init_asteroids(app_t* app) {
+    for (int i = 0; i < N_INITIAL_ASTEROIDS; i++) {
+        list_insert(app->asteroids, create_asteroid(ASTEROID_TYPE_LARGER, app->screen_width, app->screen_height));
+    }
 }
 
 void run_app(app_t* app) {
@@ -55,7 +78,6 @@ void run_app(app_t* app) {
         while (SDL_PollEvent(&event) > 0) {
             process_events(event, app);
         }
-
         process_scene(app);
         render_objects(app);    
     }
@@ -69,15 +91,15 @@ void process_events(SDL_Event event, app_t* app) {
         {
             case SDL_SCANCODE_LEFT:
                 app->keys.is_left_pressed = true;    
-                return;
+                break;
             case SDL_SCANCODE_RIGHT:
                 app->keys.is_right_pressed = true;    
-                return;
+                break;
             case SDL_SCANCODE_UP:
                 app->keys.is_up_pressed = true;    
-                return;
+                break;
         default:
-            return;
+            break;;
         }
     }
 
@@ -86,16 +108,25 @@ void process_events(SDL_Event event, app_t* app) {
         {
             case SDL_SCANCODE_Q:
                 app->is_running = false;
-                return;
+                break;
             case SDL_SCANCODE_LEFT:
                 app->keys.is_left_pressed = false;    
-                return;
+                break;
             case SDL_SCANCODE_RIGHT:
                 app->keys.is_right_pressed = false;    
-                return;
+                break;
             case SDL_SCANCODE_UP:
                 app->keys.is_up_pressed = false;    
-                return;
+                break;
+            case SDL_SCANCODE_SPACE:
+                list_insert(app->shots, (void*) create_shot(app->player));
+                break;
+            case SDL_SCANCODE_D:
+                app->show_borders = !app->show_borders;
+                break;
+            case SDL_SCANCODE_F:
+                app->is_movement_frozen = !app->is_movement_frozen;
+                break;
         default:
             break;
         }
@@ -106,23 +137,71 @@ void process_scene(app_t* app) {
     if (app->keys.is_up_pressed) move_spaceship(app->player);
     if (app->keys.is_left_pressed) rotate_anticlockwise(app->player);
     if (app->keys.is_right_pressed) rotate_clockwise(app->player);
+
+    list_foreach_element(app->shots, (void*) app, &process_get_shot);
+    list_foreach_element(app->asteroids, (void*) app, &process_get_asteroid);
+}
+
+void process_get_shot(void* a, void* s) {
+    app_t* app = (app_t*) a;
+    shot_t* shot = (shot_t*) s;
+    
+    if (app->is_movement_frozen) return;
+    move_shot(shot);
+
+    bool is_px_out = shot->position.x < 0 || shot->position.x > app->screen_width;
+    bool is_py_out = shot->position.y < 0 || shot->position.y > app->screen_height; 
+    if (is_px_out || is_py_out) {
+        list_remove(app->shots, s);
+    }
+}
+
+void process_get_asteroid(void* a, void* ast) {
+    app_t* app = (app_t*) a;
+    asteroid_t* asteroid = (asteroid_t*) ast;
+    
+    if (app->is_movement_frozen) return;
+    move_asteroid(asteroid, app->screen_width, app->screen_height);
+
+
+    // bool is_px_out = shot->position.x < 0 || shot->position.x > app->screen_width;
+    // bool is_py_out = shot->position.y < 0 || shot->position.y > app->screen_height; 
+    // if (is_px_out || is_py_out) {
+    //     list_remove(app->shots, s);
+    // }
 }
 
 void render_objects(app_t* app) {
     SDL_RenderClear(app->renderer);
-    render_spaceship(app->renderer, app->player);
-    // SDL_SetRenderDrawColor(app->renderer, 255, 0, 0, 1);
-    // SDL_RenderDrawLine(app->renderer, app->player->position.x, app->player->position.y, app->player->position.x + 20 * app->player->direction.vector.x, app->player->position.y + 20 * app->player->direction.vector.y);
+    SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
     
+    render_spaceship(app->renderer, app->texture,app->player, app->show_borders);    
+    list_foreach_element(app->shots, (void*) app, &render_get_shot);
+    list_foreach_element(app->asteroids, (void*) app, &render_get_asteroid);
     SDL_RenderPresent(app->renderer);
+}
+
+void render_get_shot(void* a, void* s) {
+    app_t* app = (app_t*) a;
+    shot_t* shot = (shot_t*) s;
+    render_shot(app->renderer, app->texture, shot, app->show_borders);
+}
+
+void render_get_asteroid(void* a, void* ast) {
+    app_t* app = (app_t*) a;
+    asteroid_t* asteroid = (asteroid_t*) ast;
+
+    render_asteroid(app->renderer, app->texture, asteroid, app->show_borders);
 }
 
 void destroy_game_objects(app_t* app) {
     SDL_DestroyWindow(app->window);
     SDL_DestroyRenderer(app->renderer);
     
-    if (app->player != NULL) free(app->player);
-    if (app != NULL) free(app);
+    free_list(app->shots);
+    free_list(app->asteroids);
+    free(app->player);
+    free(app);
     
     SDL_Quit();
 }

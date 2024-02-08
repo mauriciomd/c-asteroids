@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+
 #include "shot.h"
 
 #define PI 3.14159

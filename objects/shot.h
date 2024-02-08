@@ -5,8 +5,8 @@
 #include "../internal/direction.h"
 #include "spaceship.h"
 
-#define SHOT_WIDTH  8
-#define SHOT_HEIGHT 8
+#define SHOT_WIDTH    8 
+#define SHOT_HEIGHT   8
 #define SHOT_VELOCITY 2
 
 typedef struct Shot
