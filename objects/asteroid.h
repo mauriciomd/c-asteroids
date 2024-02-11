@@ -18,6 +18,7 @@ typedef struct Asteroid {
     direction_t direction;
     double velocity;
 
+    int id;
     int type;
     double width;
     double height;
@@ -25,9 +26,10 @@ typedef struct Asteroid {
     SDL_Point points[N_ASTEROID_POINTS];
 } asteroid_t;
 
-asteroid_t* create_asteroid(int type, int width, int height);
+asteroid_t* create_asteroid(int type, int width, int height, int id);
 void set_asteroid_start_position(asteroid_t* a, int w, int h);
 void clip_asteroid(asteroid_t* a);
 void render_asteroid(SDL_Renderer* ctx, SDL_Texture* texture, asteroid_t* asteroid, bool show_borders);
 void calculate_asteroid_points(asteroid_t* a);
 void move_asteroid(asteroid_t* a, double w, double h);
+bool check_asteroid_collision(asteroid_t* a, double x, double y, double rs);

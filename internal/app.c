@@ -66,7 +66,7 @@ void create_player(app_t* app) {
 
 void init_asteroids(app_t* app) {
     for (int i = 0; i < N_INITIAL_ASTEROIDS; i++) {
-        list_insert(app->asteroids, create_asteroid(ASTEROID_TYPE_LARGER, app->screen_width, app->screen_height));
+        list_insert(app->asteroids, (void*) create_asteroid(ASTEROID_TYPE_LARGER, app->screen_width, app->screen_height, i));
     }
 }
 
@@ -140,6 +140,28 @@ void process_scene(app_t* app) {
 
     list_foreach_element(app->shots, (void*) app, &process_get_shot);
     list_foreach_element(app->asteroids, (void*) app, &process_get_asteroid);
+    list_foreach_element(app->shots, (void*) app, &check_shot_collision);
+    
+}
+
+void check_shot_collision(void* a, void* s) {
+    app_t* app = (app_t*) a;
+    shot_t* shot = (shot_t*) s;
+
+    // Not ideal implementation
+    if (is_empty_list(app->asteroids)) return;
+
+    node_t* element = app->asteroids->head;
+    while (element != NULL) {
+        asteroid_t* ast = (asteroid_t*) element->data;
+        element = element->next;
+        bool is_collided = check_asteroid_collision(ast, shot->position.x + shot->width/2, shot->position.y + shot->height/2, shot->width/2);
+        
+        if (is_collided) {
+            list_remove(app->shots, (void*) shot);
+            list_remove(app->asteroids, (void*) ast);
+        }
+    }
 }
 
 void process_get_shot(void* a, void* s) {
@@ -162,13 +184,6 @@ void process_get_asteroid(void* a, void* ast) {
     
     if (app->is_movement_frozen) return;
     move_asteroid(asteroid, app->screen_width, app->screen_height);
-
-
-    // bool is_px_out = shot->position.x < 0 || shot->position.x > app->screen_width;
-    // bool is_py_out = shot->position.y < 0 || shot->position.y > app->screen_height; 
-    // if (is_px_out || is_py_out) {
-    //     list_remove(app->shots, s);
-    // }
 }
 
 void render_objects(app_t* app) {

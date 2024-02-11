@@ -41,9 +41,12 @@ void create_player(app_t* app);
 void init_asteroids(app_t* app);
 void process_events(SDL_Event event, app_t* app);
 void process_scene(app_t* app);
+void render_objects(app_t* app);
+void destroy_game_objects(app_t* app);
+
+// List elements
 void process_get_shot(void* a, void* s);
 void process_get_asteroid(void* a, void* ast);
-void render_objects(app_t* app);
 void render_get_shot(void* a, void* s);
 void render_get_asteroid(void* a, void* ast);
-void destroy_game_objects(app_t* app);
+void check_shot_collision(void* a, void* s);

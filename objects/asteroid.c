@@ -12,9 +12,12 @@
 #define DOWN_BORDER  3
 #define THRESHOLD    50
 
-asteroid_t* create_asteroid(int type, int width, int height) {
+#define GET_RADIUS(width) (width / 3.75)
+
+asteroid_t* create_asteroid(int type, int width, int height, int id) {
     asteroid_t* asteroid = (asteroid_t*) malloc(sizeof(asteroid_t));
     asteroid->type = type;
+    asteroid->id = id;
 
     clip_asteroid(asteroid);
     set_asteroid_start_position(asteroid, width, height);
@@ -92,7 +95,7 @@ void render_asteroid(SDL_Renderer* ctx, SDL_Texture* texture, asteroid_t* astero
 }
 
 void calculate_asteroid_points(asteroid_t* a) {
-    double r = a->width/3.75;
+    double r = GET_RADIUS(a->width);
     double angle = 0;
 
     for (int i = 0; i < N_ASTEROID_POINTS; i++) {
@@ -124,4 +127,14 @@ void move_asteroid(asteroid_t* a, double w, double h) {
     a->position.y = y;
 
     calculate_asteroid_points(a);
+}
+
+bool check_asteroid_collision(asteroid_t* a, double x, double y, double rs) {
+    double r = GET_RADIUS(a->width);
+    double dx = (a->position.x + a->width/2) - x;
+    double dy = (a->position.y + a->height/2) - y;
+    
+    double distance = sqrt(pow(dx, 2) + pow(dy, 2));
+
+    return distance <= r+rs;
 }

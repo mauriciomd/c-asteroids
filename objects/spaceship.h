@@ -9,7 +9,7 @@
 #define SPACESHIP_WIDTH          30
 #define SPACESHIP_HEIGHT         22
 #define SPACESHIP_VELOCITY       1
-#define SPACESHIP_ROTATION_ANGLE 0.5
+#define SPACESHIP_ROTATION_ANGLE 0.7
 
 typedef struct SpaceShip {
     vector_t position;
