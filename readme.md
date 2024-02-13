@@ -28,3 +28,7 @@ This is a work in progress, so there're tasks to do yet...
 - [ ] Player's life system
 - [ ] Sound effects
 - [ ] Fix a few bugs (?!)
+
+## Credits
+
+All sprites were created by [Joe Strout](https://opengameart.org/content/asteroids-vector-style-sprites).
