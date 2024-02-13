@@ -31,7 +31,13 @@ void init_sdl(app_t* app) {
         exit(1);
     }
 
-    app->window = SDL_CreateWindow("C Invaders", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, app->screen_width, app->screen_height, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS);
+    app->window = SDL_CreateWindow(
+        "C Invaders", 
+        SDL_WINDOWPOS_UNDEFINED, 
+        SDL_WINDOWPOS_UNDEFINED, 
+        app->screen_width, 
+        app->screen_height, 
+        SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS);
     if (app->window == NULL) {
         printf("SDL Window could not be created. Error: %s", SDL_GetError());
         exit(1);
@@ -66,7 +72,8 @@ void create_player(app_t* app) {
 
 void init_asteroids(app_t* app) {
     for (int i = 0; i < N_INITIAL_ASTEROIDS; i++) {
-        list_insert(app->asteroids, (void*) create_asteroid(ASTEROID_TYPE_LARGER, app->screen_width, app->screen_height, i));
+        asteroid_t* asteroid = create_asteroid(ASTEROID_TYPE_LARGER, app->screen_width, app->screen_height, i);
+        list_insert(app->asteroids, (void*) asteroid);
     }
 }
 
@@ -138,10 +145,14 @@ void process_scene(app_t* app) {
     if (app->keys.is_left_pressed) rotate_anticlockwise(app->player);
     if (app->keys.is_right_pressed) rotate_clockwise(app->player);
 
+    if (is_empty_list(app->asteroids)) {
+        app->is_running = false;
+        return;
+    }
+
     list_foreach_element(app->shots, (void*) app, &process_get_shot);
     list_foreach_element(app->asteroids, (void*) app, &process_get_asteroid);
     list_foreach_element(app->shots, (void*) app, &check_shot_collision);
-    
 }
 
 void check_shot_collision(void* a, void* s) {
@@ -155,11 +166,20 @@ void check_shot_collision(void* a, void* s) {
     while (element != NULL) {
         asteroid_t* ast = (asteroid_t*) element->data;
         element = element->next;
-        bool is_collided = check_asteroid_collision(ast, shot->position.x + shot->width/2, shot->position.y + shot->height/2, shot->width/2);
+        bool is_collided = check_asteroid_collision(
+            ast, 
+            shot->position.x + shot->width/2,
+            shot->position.y + shot->height/2, 
+            shot->width/2);
         
         if (is_collided) {
             list_remove(app->shots, (void*) shot);
+            if (ast->type != ASTEROID_TYPE_SMALL) {
+                list_insert(app->asteroids, (void*) create_child_asteroid(ast, true));
+                list_insert(app->asteroids, (void*) create_child_asteroid(ast, false));
+            } 
             list_remove(app->asteroids, (void*) ast);
+            return;
         }
     }
 }

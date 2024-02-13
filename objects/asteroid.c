@@ -21,6 +21,7 @@ asteroid_t* create_asteroid(int type, int width, int height, int id) {
 
     clip_asteroid(asteroid);
     set_asteroid_start_position(asteroid, width, height);
+    set_random_velocity(asteroid);
     calculate_asteroid_points(asteroid);
 
     return asteroid;
@@ -45,13 +46,15 @@ void set_asteroid_start_position(asteroid_t* a, int w, int h) {
         angle = rand() % 90 + 180;
     }
 
+    a->position = position;
+    set_direction_vetor(&a->direction, angle);
+}
+
+void set_random_velocity(asteroid_t* a) {
     a->velocity = (rand() % 10 + 1) / 10.0;
     if (a->velocity < ASTEROID_MIN_VELOCITY) {
         a->velocity = ASTEROID_MIN_VELOCITY;
     }
-
-    a->position  = position;
-    set_direction_vetor(&a->direction, angle);
 }
 
 void clip_asteroid(asteroid_t* a) {
@@ -67,7 +70,7 @@ void clip_asteroid(asteroid_t* a) {
         space = 80;
     } else if (type == ASTEROID_TYPE_MEDIUM) {
         y = 86;
-        x = 8;
+        x = 0;
         w = 40;
         h = 40;
         space = 48;
@@ -112,15 +115,15 @@ void move_asteroid(asteroid_t* a, double w, double h) {
     double y = a->position.y + a->velocity * a->direction.vector.y;
 
     if (x - a->width > w) { 
-        x = -THRESHOLD;
+        x = -a->width;
     } else if (x + a->width < 0) {
-        x = w + THRESHOLD; 
+        x = w + a->width; 
     } 
 
     if (y - a->height > h) { 
-        y = -THRESHOLD; 
+        y = -a->height; 
     } else if (y + a->height < 0) { 
-        y = h + THRESHOLD;  
+        y = h + a->height;  
     }
 
     a->position.x = x;
@@ -137,4 +140,18 @@ bool check_asteroid_collision(asteroid_t* a, double x, double y, double rs) {
     double distance = sqrt(pow(dx, 2) + pow(dy, 2));
 
     return distance <= r+rs;
+}
+
+asteroid_t* create_child_asteroid(asteroid_t* parent, bool positive_angle) {
+    asteroid_t* asteroid = create_asteroid(parent->type+1, 10, 10, parent->id*2);
+
+    asteroid->position.x = parent->position.x;
+    asteroid->position.y = parent->position.y;
+    if (positive_angle) {
+        direction_increase_angle(&asteroid->direction, 10);
+    } else {
+        direction_decrease_angle(&asteroid->direction, 10);
+    }
+
+    return asteroid;
 }
