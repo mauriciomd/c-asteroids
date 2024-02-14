@@ -2,6 +2,8 @@
 
 The repository contains a simplified implementation of the [Asteroids](https://en.wikipedia.org/wiki/Asteroids_(video_game)) classic game. This version was developed using the C programming language combined with SDL.
 
+![game](blob/image.png)
+
 ## Motivation
 
 I was looking for ideas about projects I could develop in my free time and, after reading the [Austin's](https://austinhenley.com/blog/challengingprojects.html) article, I've decided that it would be fun to try to develop my version of a classic game. Here are the reasons to choose this project:
